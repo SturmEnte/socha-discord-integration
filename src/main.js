@@ -1,12 +1,12 @@
 const axios = require("axios");
 const cheerio = require("cheerio");
 
-const url = "https://contest.software-challenge.de/seasons/2025/contestants/2411/matches";
+const config = require("../config.json");
 
 let alertedMatches = [];
 
 axios
-	.get(url)
+	.get(config.matchOverviewUrl)
 	.then((response) => {
 		const html = response.data;
 
@@ -28,10 +28,10 @@ axios
 			}
 		});
 
-		// Remove the practice matches and matches without a result
 		matches = matches.filter((match) => {
 			// Remove the practice matches
 			if (match[0].startsWith("P")) {
+				return true;
 			}
 
 			// Remove matches that have already been alerted
@@ -55,6 +55,26 @@ axios
 			return 1;
 		});
 
+		console.log(matches);
+
+		matches.forEach((match) => {
+			alertedMatches.push(match[0]);
+			console.log("Alerting for match", match[0]);
+
+			let score1 = match[4].split(":")[0].trim();
+			let score2 = match[4].split(":")[1].trim();
+
+			axios
+				.post(config.webhookUrl, {
+					content: `**Spieltag ${match[0]} | ${match[1]}**\n*${match[2]}* **${score1}** **:** **${score2}** *${match[3]}*`,
+				})
+				.then(() => {
+					console.log("Alerted for match", match[0]);
+				})
+				.catch((err) => {
+					console.error("Error while alerting for match", match[0], err);
+				});
+		});
 	})
 	.catch((error) => {
 		console.error("Error while loading the website:", error);
