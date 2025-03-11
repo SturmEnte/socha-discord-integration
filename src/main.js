@@ -66,8 +66,6 @@ function scrapeAndProcess() {
 				return 1;
 			});
 
-			console.log(matches);
-
 			matches.forEach((match) => {
 				processedMatches.push(match[0]);
 				saveProcessedMatches();
