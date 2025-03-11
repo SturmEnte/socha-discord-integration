@@ -14,6 +14,7 @@ if (!fs.existsSync(dataPath)) {
 let processedMatches = loadProcessedMatches();
 
 function scrapeAndProcess() {
+	console.log(`Starting to scrape the website (${new Date().toLocaleString()})`);
 	axios
 		.get(config.matchOverviewUrl)
 		.then((response) => {
