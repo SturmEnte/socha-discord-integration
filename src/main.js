@@ -66,7 +66,7 @@ axios
 
 			axios
 				.post(config.webhookUrl, {
-					content: `**Spieltag ${match[0]} | ${match[1]}**\n*${match[2]}* **${score1}** **:** **${score2}** *${match[3]}*`,
+					content: `<@&${config.pingedRoleId}>\n**Spieltag ${match[0]} | ${match[1]}**\n*${match[2]}* **${score1}** **:** **${score2}** *${match[3]}*`,
 				})
 				.then(() => {
 					console.log("Alerted for match", match[0]);
