@@ -23,7 +23,7 @@ The config is a simple *config.json* file in the root directory. The config shou
 - `pingedRoleId` is the id of the role that should be pinged in the alert messages
 - `intervalMs` is the time in milliseconds between each refresh
 
-# Setup
+## Setup
 Before running the project you have to install the required npm packages by running `npm install`.\
 You also have to create a config like just explained.\
 After that can the project be run with `node src/main.js` from the root directory.\
