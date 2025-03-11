@@ -26,6 +26,27 @@ axios
 			}
 		});
 
+		// Remove the practice matches and matches without a result
+		matches = matches.filter((match) => {
+			if (match[0].startsWith("P")) {
+				return false;
+			}
+
+			if (match[4] == "ausstehend") {
+				return false;
+			}
+
+			return true;
+		});
+
+		// Sort the matches by the match number
+		matches = matches.sort((a, b) => {
+			if (Number(a[0]) < Number(b[0])) {
+				return -1;
+			}
+			return 1;
+		});
+
 	})
 	.catch((error) => {
 		console.error("Error while loading the website:", error);
