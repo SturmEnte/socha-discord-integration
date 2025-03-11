@@ -1,0 +1,16 @@
+{
+	"name": "socha-discord-integration",
+	"license": "GPL-3.0",
+	"author": "SturmEnte",
+	"main": "src/main.js",
+	"scripts": {
+		"test": "nodemon ."
+	},
+	"devDependencies": {
+		"nodemon": "^3.1.9"
+	},
+	"dependencies": {
+		"axios": "^1.8.2",
+		"cheerio": "^1.0.0"
+	}
+}
