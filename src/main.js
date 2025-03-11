@@ -1,9 +1,17 @@
 const axios = require("axios");
 const cheerio = require("cheerio");
+const path = require("path");
+const fs = require("fs");
 
 const config = require("../config.json");
 
-let alertedMatches = [];
+const dataPath = path.join(__dirname, "../", "data");
+
+if (!fs.existsSync(dataPath)) {
+	fs.writeFileSync(dataPath, "[]");
+}
+
+let processedMatches = loadProcessedMatches();
 
 axios
 	.get(config.matchOverviewUrl)
@@ -31,12 +39,14 @@ axios
 		matches = matches.filter((match) => {
 			// Remove the practice matches
 			if (match[0].startsWith("P")) {
-				return true;
+				return false;
 			}
 
 			// Remove matches that have already been alerted
-			if (alertedMatches.includes(match[0])) {
-				return false;
+			for (let i = 0; i < processedMatches.length; i++) {
+				if (match[0] == processedMatches[i]) {
+					return false;
+				}
 			}
 
 			// Remove matches without a result
@@ -58,7 +68,8 @@ axios
 		console.log(matches);
 
 		matches.forEach((match) => {
-			alertedMatches.push(match[0]);
+			processedMatches.push(match[0]);
+			saveProcessedMatches();
 			console.log("Alerting for match", match[0]);
 
 			let score1 = match[4].split(":")[0].trim();
@@ -79,3 +90,11 @@ axios
 	.catch((error) => {
 		console.error("Error while loading the website:", error);
 	});
+
+function saveProcessedMatches() {
+	fs.writeFileSync(dataPath, JSON.stringify(processedMatches));
+}
+
+function loadProcessedMatches() {
+	return JSON.parse(fs.readFileSync(dataPath));
+}
