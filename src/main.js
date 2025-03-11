@@ -3,6 +3,8 @@ const cheerio = require("cheerio");
 
 const url = "https://contest.software-challenge.de/seasons/2025/contestants/2411/matches";
 
+let alertedMatches = [];
+
 axios
 	.get(url)
 	.then((response) => {
@@ -28,10 +30,16 @@ axios
 
 		// Remove the practice matches and matches without a result
 		matches = matches.filter((match) => {
+			// Remove the practice matches
 			if (match[0].startsWith("P")) {
+			}
+
+			// Remove matches that have already been alerted
+			if (alertedMatches.includes(match[0])) {
 				return false;
 			}
 
+			// Remove matches without a result
 			if (match[4] == "ausstehend") {
 				return false;
 			}
