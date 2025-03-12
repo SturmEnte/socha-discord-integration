@@ -68,8 +68,6 @@ function scrapeAndProcess() {
 			});
 
 			matches.forEach((match) => {
-				processedMatches.push(match[0]);
-				saveProcessedMatches();
 				console.log("Alerting for match", match[0]);
 
 				let score1 = match[4].split(":")[0].trim();
@@ -81,6 +79,8 @@ function scrapeAndProcess() {
 					})
 					.then(() => {
 						console.log("Alerted for match", match[0]);
+						processedMatches.push(match[0]);
+						saveProcessedMatches();
 					})
 					.catch((err) => {
 						console.error("Error while alerting for match", match[0], err);
