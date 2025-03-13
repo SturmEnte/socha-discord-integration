@@ -92,8 +92,43 @@ function scrapeAndProcess() {
 		});
 }
 
-scrapeAndProcess();
-setInterval(scrapeAndProcess, config.intervalMs);
+let recentMessages = [];
+
+async function newMessage() {
+	let newMessage = false;
+
+	const res = await axios.get(config.discordChannelRequestUrl, { headers: { Authorization: config.discordUserToken } });
+
+	for (const message of res.data) {
+		if (!recentMessages.includes(message.id)) {
+			newMessage = true;
+			recentMessages.push(message.id);
+		}
+	}
+
+	return newMessage;
+}
+
+async function update() {
+	try {
+		if (await newMessage()) {
+			console.log("Found new message");
+			scrapeAndProcess();
+		} else {
+			console.log("Didn't find new messages");
+		}
+	} catch (err) {
+		if (err.status == 401) {
+			axios.post(config.webhookUrl, { content: `<@${config.adminId}> my token is probably invalid` });
+			console.log("Probalby invalid token");
+		}
+
+		console.log("Error while updating", err);
+	}
+}
+
+update();
+setInterval(update, config.intervalMs);
 
 function saveProcessedMatches() {
 	fs.writeFileSync(dataPath, JSON.stringify(processedMatches));
