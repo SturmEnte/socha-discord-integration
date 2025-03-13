@@ -15,13 +15,19 @@ The config is a simple *config.json* file in the root directory. The config shou
         "matchOverviewUrl": "https://contest.software-challenge.de/seasons/.../contestants/.../matches"
         "webhookUrl": "https://discord.com/api/webhooks/.../..."
         "pingedRoleId": "...",
-        "intervalMs": 900000
+        "intervalMs": 900000,
+        "discordUserToken": "...",
+	"discordChannelRequestUrl": "https://discord.com/api/v9/channels/.../messages",
+	"adminId": "..."
 }
 ```
 - `matchOverviewUrl` is the url of the contestant's matches that should be looked at
 - `webhookUrl` is the url of the Discord webhook
 - `pingedRoleId` is the id of the role that should be pinged in the alert messages
 - `intervalMs` is the time in milliseconds between each refresh
+- `discordUserToken` is the token of a Discord user account that is a member of the offical Software Challenge Discord server
+- `discordChannelRequestUrl` is the Url to the messages Discord api endpoint for the channel in which new results are announced
+- `adminId` is the id of the admin of the Discord server to which the webhook belongs
 
 ## Setup
 Before running the project you have to install the required npm packages by running `npm install`.\
