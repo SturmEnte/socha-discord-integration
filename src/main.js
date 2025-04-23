@@ -59,16 +59,20 @@ function scrapeAndProcess() {
 				return true;
 			});
 
-			// Sort the matches by the match number
+			// Sort the matches by the match's date
 			matches = matches.sort((a, b) => {
-				if (Number(a[0]) < Number(b[0])) {
+				const dateA = parseDateString(a[1]);
+				const dateB = parseDateString(b[1]);
+
+				if (dateA.getTime() < dateB.getTime()) {
 					return -1;
 				}
+
 				return 1;
 			});
 
 			matches.forEach((match) => {
-				console.log("Alerting for match", match[0]);
+				console.log("Alerting for match", match[1]);
 
 				let score1 = match[4].split(":")[0].trim();
 				let score2 = match[4].split(":")[1].trim();
@@ -78,12 +82,12 @@ function scrapeAndProcess() {
 						content: `<@&${config.pingedRoleId}>\n**Spieltag ${match[0]} | ${match[1]}**\n*${match[2]}* **${score1}** **:** **${score2}** *${match[3]}*`,
 					})
 					.then(() => {
-						console.log("Alerted for match", match[0]);
-						processedMatches.push(match[0]);
+						console.log("Alerted for match", match[0], "|", match[1]);
+						processedMatches.push(match[1]);
 						saveProcessedMatches();
 					})
 					.catch((err) => {
-						console.error("Error while alerting for match", match[0], err);
+						console.error("Error while alerting for match", match[0], "|", match[1], err);
 					});
 			});
 		})
@@ -136,4 +140,10 @@ function saveProcessedMatches() {
 
 function loadProcessedMatches() {
 	return JSON.parse(fs.readFileSync(dataPath));
+}
+
+// Parse a string from dd.mm.yyyy to a Date object
+function parseDateString(dateString) {
+	const [day, month, year] = dateString.split(".");
+	return new Date(year, month - 1, day);
 }
