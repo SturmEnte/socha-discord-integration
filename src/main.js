@@ -46,7 +46,7 @@ function scrapeAndProcess() {
 
 				// Remove matches that have already been alerted
 				for (let i = 0; i < processedMatches.length; i++) {
-					if (match[0] == processedMatches[i]) {
+					if (match[1] == processedMatches[i]) {
 						return false;
 					}
 				}
