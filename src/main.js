@@ -17,7 +17,7 @@ function scrapeAndProcess() {
 	console.log(`Starting to scrape the website (${new Date().toLocaleString()})`);
 	axios
 		.get(config.matchOverviewUrl)
-		.then((response) => {
+		.then(async (response) => {
 			const html = response.data;
 
 			const $ = cheerio.load(html);
@@ -71,25 +71,29 @@ function scrapeAndProcess() {
 				return 1;
 			});
 
-			matches.forEach((match) => {
-				console.log("Alerting for match", match[1]);
+			// Send message for every missing match
+			for (let i = 0; i < matches.length; i++) {
+				try {
+					const match = matches[i];
 
-				let score1 = match[4].split(":")[0].trim();
-				let score2 = match[4].split(":")[1].trim();
+					console.log("Alerting for match", match[1]);
 
-				axios
-					.post(config.webhookUrl, {
+					let score1 = match[4].split(":")[0].trim();
+					let score2 = match[4].split(":")[1].trim();
+
+					await axios.post(config.webhookUrl, {
 						content: `<@&${config.pingedRoleId}>\n**Spieltag ${match[0]} | ${match[1]}**\n*${match[2]}* **${score1}** **:** **${score2}** *${match[3]}*`,
-					})
-					.then(() => {
-						console.log("Alerted for match", match[0], "|", match[1]);
-						processedMatches.push(match[1]);
-						saveProcessedMatches();
-					})
-					.catch((err) => {
-						console.error("Error while alerting for match", match[0], "|", match[1], err);
 					});
-			});
+
+					console.log("Alerted for match", match[0], "|", match[1]);
+					processedMatches.push(match[1]);
+					saveProcessedMatches();
+
+					delay(2000);
+				} catch (err) {
+					console.error("Error while alerting for match", match[0], "|", match[1], err);
+				}
+			}
 		})
 		.catch((error) => {
 			console.error("Error while loading the website:", error);
@@ -146,4 +150,12 @@ function loadProcessedMatches() {
 function parseDateString(dateString) {
 	const [day, month, year] = dateString.split(".");
 	return new Date(year, month - 1, day);
+}
+
+// This function blocks the code execution for the specified delay
+// This is kinda sketchy and would cause freezes in browser applications so use it carefully
+// This works like the delay function in Arduinos
+function delay(ms) {
+	const start = Date.now();
+	while (Date.now() - start < ms) {}
 }
