@@ -13,91 +13,91 @@ if (!fs.existsSync(dataPath)) {
 
 let processedMatches = loadProcessedMatches();
 
-function scrapeAndProcess() {
-	console.log(`Starting to scrape the website (${new Date().toLocaleString()})`);
-	axios
-		.get(config.matchOverviewUrl)
-		.then(async (response) => {
-			const html = response.data;
+async function scrapeAndProcess() {
+	try {
+		console.log(`Starting to scrape the website (${new Date().toLocaleString()})`);
 
-			const $ = cheerio.load(html);
+		const response = await axios.get(config.matchOverviewUrl);
 
-			let matches = [];
+		const html = response.data;
 
-			let i = 0;
-			let currentMatch = Array(5).fill(null);
+		const $ = cheerio.load(html);
 
-			$("tbody tr td").each((_, elem) => {
-				currentMatch[i] = $(elem).text().trim();
-				i++;
+		let matches = [];
 
-				if (i == 5) {
-					matches.push(currentMatch);
-					currentMatch = Array(5).fill(null);
-					i = 0;
-				}
-			});
+		let i = 0;
+		let currentMatch = Array(5).fill(null);
 
-			matches = matches.filter((match) => {
-				// Remove the practice matches
-				if (match[0].startsWith("P")) {
+		$("tbody tr td").each((_, elem) => {
+			currentMatch[i] = $(elem).text().trim();
+			i++;
+
+			if (i == 5) {
+				matches.push(currentMatch);
+				currentMatch = Array(5).fill(null);
+				i = 0;
+			}
+		});
+
+		matches = matches.filter((match) => {
+			// Remove the practice matches
+			if (match[0].startsWith("P")) {
+				return false;
+			}
+
+			// Remove matches that have already been alerted
+			for (let i = 0; i < processedMatches.length; i++) {
+				if (match[1] == processedMatches[i]) {
 					return false;
-				}
-
-				// Remove matches that have already been alerted
-				for (let i = 0; i < processedMatches.length; i++) {
-					if (match[1] == processedMatches[i]) {
-						return false;
-					}
-				}
-
-				// Remove matches without a result
-				if (match[4] == "ausstehend") {
-					return false;
-				}
-
-				return true;
-			});
-
-			// Sort the matches by the match's date
-			matches = matches.sort((a, b) => {
-				const dateA = parseDateString(a[1]);
-				const dateB = parseDateString(b[1]);
-
-				if (dateA.getTime() < dateB.getTime()) {
-					return -1;
-				}
-
-				return 1;
-			});
-
-			// Send message for every missing match
-			for (let i = 0; i < matches.length; i++) {
-				try {
-					const match = matches[i];
-
-					console.log("Alerting for match", match[1]);
-
-					let score1 = match[4].split(":")[0].trim();
-					let score2 = match[4].split(":")[1].trim();
-
-					await axios.post(config.webhookUrl, {
-						content: `<@&${config.pingedRoleId}>\n**Spieltag ${match[0]} | ${match[1]}**\n*${match[2]}* **${score1}** **:** **${score2}** *${match[3]}*`,
-					});
-
-					console.log("Alerted for match", match[0], "|", match[1]);
-					processedMatches.push(match[1]);
-					saveProcessedMatches();
-
-					delay(2000);
-				} catch (err) {
-					console.error("Error while alerting for match", match[0], "|", match[1], err);
 				}
 			}
-		})
-		.catch((error) => {
-			console.error("Error while loading the website:", error);
+
+			// Remove matches without a result
+			if (match[4] == "ausstehend") {
+				return false;
+			}
+
+			return true;
 		});
+
+		// Sort the matches by the match's date
+		matches = matches.sort((a, b) => {
+			const dateA = parseDateString(a[1]);
+			const dateB = parseDateString(b[1]);
+
+			if (dateA.getTime() < dateB.getTime()) {
+				return -1;
+			}
+
+			return 1;
+		});
+
+		// Send message for every missing match
+		for (let i = 0; i < matches.length; i++) {
+			try {
+				const match = matches[i];
+
+				console.log("Alerting for match", match[1]);
+
+				let score1 = match[4].split(":")[0].trim();
+				let score2 = match[4].split(":")[1].trim();
+
+				await axios.post(config.webhookUrl, {
+					content: `<@&${config.pingedRoleId}>\n**Spieltag ${match[0]} | ${match[1]}**\n*${match[2]}* **${score1}** **:** **${score2}** *${match[3]}*`,
+				});
+
+				console.log("Alerted for match", match[0], "|", match[1]);
+				processedMatches.push(match[1]);
+				saveProcessedMatches();
+
+				delay(2000);
+			} catch (err) {
+				console.error("Error while alerting for match", match[0], "|", match[1], err);
+			}
+		}
+	} catch (err) {
+		console.error("Error while loading the website:", err);
+	}
 }
 
 let recentMessages = [];
